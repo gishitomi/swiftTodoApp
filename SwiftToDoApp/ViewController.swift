@@ -40,12 +40,32 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return cell
     }
     
+    //セルが押された場合
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        //別の画面に遷移
+        let nextVC = storyboard?.instantiateViewController(withIdentifier: "toNext") as! NextViewController
+        
+        nextVC.todoString = todoList[indexPath.row]
+        
+        self.present(nextVC, animated: true, completion: nil)
+    }
+    
+    //セルの編集を許可
+    func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
+        return true
+    }
+    
+    
+    
     //テキストフィールド上でリターンキーが押された場合
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        //配列に入力値を追加する
         todoList.append(todoInput.text!)
         //キーボードを閉じる
         todoInput.resignFirstResponder()
         todoInput.text = ""
+        
+        //画面を再描画
         todoTable.reloadData()
         
         return true
