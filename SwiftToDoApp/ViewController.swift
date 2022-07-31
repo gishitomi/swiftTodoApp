@@ -16,6 +16,8 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     var todoList = [String]()
     
+    let userDefaults = UserDefaults.standard
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,6 +25,10 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         todoInput.delegate = self
         todoTable.delegate = self
         todoTable.dataSource = self
+        
+        if let storedTodoList = userDefaults.array(forKey: "todoList") as? [String] {
+            todoList.append(contentsOf: storedTodoList)
+        }
         
     }
     
@@ -32,10 +38,13 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         //セルを取得する
-        let cell: UITableViewCell = todoTable.dequeueReusableCell(withIdentifier: "todoCell", for: indexPath)
+        guard let cell: TodoTableViewCell = todoTable.dequeueReusableCell(withIdentifier: "TodoTableViewCell", for: indexPath) as? TodoTableViewCell else {
+            fatalError("Dequeue failed: AnimalTableViewCell.")
+        }
         
         //セルに表示する値
-        cell.textLabel!.text = todoList[indexPath.row]
+//        cell.textLabel!.text = todoList[indexPath.row]
+        cell.todoText.text = todoList[indexPath.row]
         
         return cell
     }
@@ -55,12 +64,24 @@ class ViewController: UIViewController, UITableViewDelegate, UITableViewDataSour
         return true
     }
     
+    //セルの削除機能
+    func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == UITableViewCell.EditingStyle.delete {
+            todoList.remove(at: indexPath.row)
+            tableView.deleteRows(at: [indexPath as IndexPath], with: UITableView.RowAnimation.automatic)
+        }
+        userDefaults.set(todoList, forKey: "todoList")
+    }
+    
     
     
     //テキストフィールド上でリターンキーが押された場合
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         //配列に入力値を追加する
         todoList.append(todoInput.text!)
+        //追加したToDoを保存
+        userDefaults.set(todoList, forKey: "todoList")
+        
         //キーボードを閉じる
         todoInput.resignFirstResponder()
         todoInput.text = ""
